@@ -7,7 +7,7 @@ Neovim plugin implementing functionality for LSP code actions for [`ltex-ls`](ht
 
 In addition, this plugin provides functions for loading and saving of LSP server settings and custom dictionaries.
 
-There are already several other excellent neovim plugins that provide similar functionality: for example, [LTeX\_extra.nvim](https://github.com/barreiroleo/ltex_extra.nvim#features), [LTeX LS Client](https://github.com/icewind/ltex-client.nvim), and [ltex-ls.nvim](https://github.com/vigoux/ltex-ls.nvim).
+There are already several other excellent neovim plugins that provide similar functionality: for example, [LTeX\_extra.nvim](https://github.com/barreiroleo/ltex_extra.nvim), [LTeX LS Client](https://github.com/icewind/ltex-client.nvim), and [ltex-ls.nvim](https://github.com/vigoux/ltex-ls.nvim).
 
 > **Question**. Why another LTeX plugin?<br> 
 >**Answer**. The last time I checked, these plugins are well written and do a fantastic job.
