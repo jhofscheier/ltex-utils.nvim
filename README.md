@@ -1,9 +1,9 @@
 # LTeX-Utils.nvim: LTeX Utility functions
 
 Neovim plugin implementing functionality for LSP code actions for [`ltex-ls`](https://github.com/valentjn/ltex-ls), namely
-* [`addToDictionary`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexhidefalsepositives-client),
+* [`addToDictionary`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexaddtodictionary-client),
 * [`disableRule`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexdisablerules-client), and
-* [`hideFalsePositive`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexaddtodictionary-client).
+* [`hideFalsePositive`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexhidefalsepositives-client).
 
 In addition, this plugin provides functions for loading and saving of LSP server settings and custom dictionaries.
 
