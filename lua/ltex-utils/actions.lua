@@ -4,6 +4,11 @@ local ltex_lsp = require("ltex-utils.ltex_lsp")
 local settings_io = require("ltex-utils.settings_io")
 local table_utils = require("ltex-utils.table_utils")
 
+--- Configuration for the plugin.
+-- @module ltex-utils.actions
+
+-- @field dict_path Path to the directory where dictionaries are stored.
+-- Defaults to the Neovim cache directory.
 M.dict_path = vim.api.nvim_call_function("stdpath", {"cache"}) .. "/ltex/"
 
 
@@ -16,14 +21,17 @@ function M.new_handler(cmd_cfg, setting_cfg)
 		-- if no active ltex client abort
 		if not client then return end
 
-		local settings = ltex_lsp.get_settings(client, setting_cfg)
+		local settings = ltex_lsp.get_settings_or_init(client, setting_cfg)
 
 		for lang, rule in pairs(command.arguments[1][cmd_cfg]) do
 			table_utils.extend_or_init(settings[setting_cfg], lang, rule)
 		end
 
-		client.config.settings.ltex = settings
-		client.notify("workspace/didChangeConfiguration", client.config.settings)
+		-- client.config.settings.ltex = settings
+		client.notify(
+			"workspace/didChangeConfiguration",
+			client.config.settings
+		)
 	end
 end
 
@@ -143,7 +151,10 @@ function M.load_ltex_from_file()
 		)
 	end
 
-	client.notify("workspace/didChangeConfiguration", client.config.settings)
+	client.notify(
+		"workspace/didChangeConfiguration",
+		client.config.settings
+	)
 	return true, nil
 end
 
