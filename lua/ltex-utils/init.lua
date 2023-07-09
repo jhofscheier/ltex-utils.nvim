@@ -1,59 +1,76 @@
 local M = {}
-local ltex = require("ltex-utils.actions")
-local modify_rule = require("ltex-utils.modify_rule")
 
---- Writes current LTeX LSP server settings to a file on buffer unload.
---
--- @return string Returns an error message if writing to a file fails.
---                No return value on success.
---
+local Config = require("ltex-utils.config")
+local builtin = require("ltex-utils.builtin")
+local ltex = require("ltex-utils.actions")
+local rule_ui = require("ltex-utils.rule_ui")
+
+-- Writes current LTeX LSP server settings to file
+---@return string|nil  # error message if writing to file fails
 local function on_exit()
-	local ok, err = pcall(ltex.write_ltex_to_file)
+	local bufnr = vim.api.nvim_get_current_buf()
+	local cached_dict_changes = builtin.rule_edit_cache[bufnr].dictionary
+
+	-- delete current buffer from cache
+	builtin.rule_edit_cache[bufnr] = nil
+
+	local ok, err = pcall(ltex.write_ltex_to_file, cached_dict_changes)
 
 	if not ok then
-		print("Error on exit: ", err)
+		vim.notify("Error on exit: " .. vim.inspect(err), vim.log.levels.ERROR)
 		return err
 	end
 end
 
---- Sets up autocommands for the LTeX plugin.
---
--- This function creates an augroup named 'LTeXUtils' and sets up two
--- autocommands:
--- 1. 'BufUnload': Triggers the `on_exit()` function whenever a `.tex` file is
---    unloaded. This saves the LTeX settings to a file.
--- 2. 'FileType': When a buffer of type 'tex' or 'plaintex' is opened, it sets
---    up two user commands:
---    - 'WriteLtexToFile': Saves the LTeX settings to a file.
---    - 'LoadLtexFromFile': Loads the LTeX settings from a file.
+-- Set up autocommands in respective augroups (e.g., 'LTeXUtils')
+---@return nil
 local function autocmd_ltex()
-	local augroup_id = vim.api.nvim_create_augroup('LTeXUtils',
-												   { clear = true })
+	local augroup_id = vim.api.nvim_create_augroup(
+		"LTeXUtils",
+		{ clear = true }
+	)
+
 	vim.api.nvim_create_autocmd(
-		{ 'BufUnload' },
+		{ "BufUnload" },
 		{
-			pattern = { '*.tex', '*.md' },
+			pattern = { "*.tex", "*.md" },
 			callback = on_exit,
 			group = augroup_id,
-			desc = 'save ltex settings to files',
+			desc = "save ltex settings to files",
 		}
 	)
+
+	vim.api.nvim_create_autocmd(
+		{ "BufEnter"},
+		{
+			pattern = { "*.tex", "*.md" },
+			callback = function ()
+				local bufnr = vim.api.nvim_get_current_buf()
+				--builtin.rule_edit_cache[bufnr].cache:apply_changes(bufnr)
+				builtin.rule_edit_cache[bufnr]:update(bufnr)
+			end,
+			group = augroup_id,
+			desc = "apply cached rule changes",
+		}
+	)
+
+	vim.api.nvim_create_autocmd("User", {
+		pattern = "TelescopePreviewerLoaded",
+		callback = function(args)
+			local extension = args.data.bufname:match("%.(%w+)$")
+			if extension == "md" or extension == "tex" then
+				vim.wo.number = Config.rule_ui.previewer_line_number
+				vim.wo.wrap = Config.rule_ui.previewer_wrap
+			end
+		end,
+	})
 end
 
---- Called when an LTeX LSP server is attached.
--- 
--- This function does the following:
--- 1. Adds custom LSP commands for the ltex language server.
--- 2. Creates auto commands using the 'autocmd_ltex' function.
--- 3. Loads saved server settings from a file. If no settings file exists,
---    it informs the user and continues with empty settings.
--- 
--- @return If there is an error loading the settings file and the error is not
---         due to the file not existing, it returns the error message.
---
--- @usage This function is typically called automatically when an LTeX LSP
---        server is attached.
-function M.on_attach()
+---Called when an LTeX LSP server is attached. Adds custom LSP commands.
+---Creates auto commands. Loads saved server settings.
+---@param bufnr integer
+---@return string|nil # error message if file exists but can't be loaded
+function M.on_attach(bufnr)
 	-- Use local variables to reduce table lookup cost
 	local cmds = vim.lsp.commands
 	-- Add custom LSP commands for the ltex language server
@@ -73,46 +90,40 @@ function M.on_attach()
 	-- create autocommands
 	autocmd_ltex()
 
+	-- create ui instance for modifying rules; guarantees that
+	-- managing rules in different buffers work as expected
+	builtin.rule_edit_cache[bufnr] = rule_ui.new()
+
 	-- load server settings if they exist
 	local ok, err = ltex.load_ltex_from_file()
 	if not ok and err then
 		-- if settings file does not exist yet, inform user and
 		-- continue with emtpy settings
 		if string.sub(err, 1, 6) == 'ENOENT' then
-			print(
+			vim.notify(
 				"No existing settings file yet. " ..
-				"Will be generated automatically when file closed.")
+				"Will be generated automatically when file closed.",
+				vim.log.levels.INFO
+			)
 		else
-			print("Error on attach: ", err)
+			vim.notify(
+				"Error on attach: " .. vim.inspect(err),
+				vim.log.levels.ERROR
+			)
 			return err
 		end
 	end
 end
 
---- Sets up the module with user-defined options.
--- 
--- @param opts A table containing user-defined options. Currently, only
---             'dict_path' is supported.
--- @usage
---     local ltex = require('ltex')
---     ltex.setup({dict_path = "/custom/dictionary/path"})
+-- Sets up the module with user-defined options.
+---@param opts? LTeXUtils.Config A table containing user-defined options.
 function M.setup(opts)
 	-- use custom options if provided
-	if opts then
-		if opts.dict_path then
-			ltex.dict_path = opts.dict_path
-		end
-		if opts.modify_rule_key then
-			modify_rule.modify_rule_key = opts.modify_rule_key
-		end
-		if opts.delete_rule_key then
-			modify_rule.delete_rule_key = opts.delete_rule_key
-		end
-		if opts.win_opts then
-			modify_rule.opts = opts.win_opts
-		end
-	end
-
+	require("ltex-utils.config").setup(opts)
 end
 
-return M
+return setmetatable(M, {
+	__index = function(_, k)
+		return require("ltex-utils.builtin")[k]
+	end,
+})
