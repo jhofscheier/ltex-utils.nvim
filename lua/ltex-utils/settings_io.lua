@@ -102,14 +102,19 @@ end
         A list of languages that have been updated.
 
 --]]
-function M.update_dictionary_files(dict_path, dictionaries)
+function M.update_dictionary_files(dict_path, dictionaries, cached_changes)
+	cached_changes = cached_changes or {}
 	local used_langs = {}
 	for lang, dict in pairs(dictionaries) do
 		local filename = dict_path .. lang .. ".json"
 		local saved_dict = M.read_settings(filename)
 		-- if there is already a saved dictionary merge it with current one
 		if saved_dict then
-			dict = table_utils.merge_lists_unique(dict, saved_dict)
+			dict = table_utils.merge_lists_unique(
+				dict,
+				saved_dict,
+				cached_changes[lang]
+			)
 		end
 		M.write_settings(filename, dict)
 		table.insert(used_langs, lang)
