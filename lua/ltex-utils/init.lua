@@ -9,10 +9,10 @@ local rule_ui = require("ltex-utils.rule_ui")
 ---@return string|nil  # error message if writing to file fails
 local function on_exit()
 	local bufnr = vim.api.nvim_get_current_buf()
-	local cached_dict_changes = builtin.rule_edit_cache[bufnr].dictionary
+	local cached_dict_changes = builtin.wins[bufnr].dictionary
 
-	-- delete current buffer from cache
-	builtin.rule_edit_cache[bufnr] = nil
+	-- delete current buffer from windows list
+	builtin.wins[bufnr] = nil
 
 	local ok, err = pcall(ltex.write_ltex_to_file, cached_dict_changes)
 
@@ -46,8 +46,11 @@ local function autocmd_ltex()
 			pattern = { "*.tex", "*.md" },
 			callback = function ()
 				local bufnr = vim.api.nvim_get_current_buf()
-				--builtin.rule_edit_cache[bufnr].cache:apply_changes(bufnr)
-				builtin.rule_edit_cache[bufnr]:update(bufnr)
+				local cache = builtin.wins[bufnr].cache
+				if cache then
+					cache:apply_cache(bufnr)
+				end
+				vim.diagnostic.show()
 			end,
 			group = augroup_id,
 			desc = "apply cached rule changes",
@@ -92,7 +95,7 @@ function M.on_attach(bufnr)
 
 	-- create ui instance for modifying rules; guarantees that
 	-- managing rules in different buffers work as expected
-	builtin.rule_edit_cache[bufnr] = rule_ui.new()
+	builtin.wins[bufnr] = rule_ui.new()
 
 	-- load server settings if they exist
 	local ok, err = ltex.load_ltex_from_file()
