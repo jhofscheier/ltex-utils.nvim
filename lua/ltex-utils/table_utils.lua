@@ -13,13 +13,13 @@ function M.extend_or_init(t1, key, t2)
 end
 
 ---Merges two input lists into one, removing any duplicates.
----@generic T
----@param list1 T[]
----@param list2 T[]
----@param changes table<T, T>
----@return T[]
+---@param list1 string[]
+---@param list2 string[]
+---@param changes table<string, string>
+---@return string[]
 function M.merge_lists_unique(list1, list2, changes)
 	-- Create a table to store the unique elements
+	---@type table<string, boolean>
 	local unique_elements = {}
 
 	if not changes then
@@ -34,6 +34,7 @@ function M.merge_lists_unique(list1, list2, changes)
 		-- and apply changes when iterating through lists
 		for _, list in ipairs({list1, list2}) do
 			for _, element in ipairs(list) do
+				---@type string
 				local curr_change = changes[element]
 				if not curr_change then
 					unique_elements[element] = true
@@ -45,6 +46,7 @@ function M.merge_lists_unique(list1, list2, changes)
 	end
 
 	-- Convert the unique_elements table to a list
+	---@type string[]
 	local merged_list = vim.tbl_keys(unique_elements)
 
 	return merged_list
@@ -55,6 +57,7 @@ end
 ---@param tbl table<integer, any>
 ---@return integer
 function M.max_index(tbl)
+	---@type integer
 	local max = 0
 	for i, _ in pairs(tbl) do
 		if i > max then
