@@ -1,13 +1,19 @@
-local M = {}
-
 local Config = require("ltex-utils.config")
 
---- Returns the first active LTeX LSP client attached to a buffer.
---
--- @param bufnr Buffer number (optional). If not provided, uses current buffer.
--- @return LTeX LSP client if found, otherwise nil.
--- NOTE: vim.lsp.buf_get_clients() is deprecated;
--- use vim.lsp.get_active_clients instead.
+
+local M = {}
+
+---@class vim.loop.timer
+---@field start function()
+---@field stop function()
+---@field close function()
+
+
+---Returns the first active LTeX LSP client attached to a buffer.
+---NOTE: vim.lsp.buf_get_clients() is deprecated;
+---use vim.lsp.get_active_clients instead.
+---@param bufnr integer|nil Buffer number; if not provided uses current buffer.
+---@return table|nil # LTeX LSP client if found, otherwise nil.
 function M.get_ltex(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
@@ -20,9 +26,13 @@ function M.get_ltex(bufnr)
 	return nil
 end
 
--- Returns the LSP server settings for a specified 'option' from the given
--- 'client'. Initializes an empty table for the 'option' if it doesn't exist.
+---Returns the LSP server settings for a specified 'option' from the given
+---'client'. Initializes an empty table for the 'option' if it doesn't exist.
+---@param client table LTeX LSP client
+---@param option string
+---@return table<string, string[]>
 function M.get_settings_or_init(client, option)
+	---@type table
 	local settings = client.config.settings.ltex or {}
 
 	if not settings[option] then
@@ -32,14 +42,13 @@ function M.get_settings_or_init(client, option)
 	return settings
 end
 
---- Retrieves specified settings from the LTeX LSP server configuration.
---
--- @param client The LTeX LSP client.
--- @param setting_cfg The settings configuration to retrieve.
--- @return table, string Returns the settings table if found. Returns nil and
---                       an error message if not found.
---
+---Retrieves specified settings from the LTeX LSP server configuration.
+---@param client table LTeX LSP client
+---@param setting_cfg string The settings configuration to retrieve.
+---@return table<string, string[]>|nil # Returns the settings table if found.
+---@return string|nil # Returns nil and an error message if not found.
 function M.get_settings(client, setting_cfg)
+	---@type table
 	local settings = client.config.settings.ltex
 
 	-- Check if active server has settings `setting_cfg`
@@ -53,44 +62,13 @@ function M.get_settings(client, setting_cfg)
 	return settings[setting_cfg]
 end
 
---- Retrieves the specified settings for a given language from the LTeX LSP
---  server configuration.
---
--- @param client The LTeX LSP client.
--- @param setting_cfg The settings configuration to retrieve.
--- @param lang The language for which settings should be retrieved.
--- @return table, string Returns the language-specific settings table if found.
---                       Returns nil and an error message if not found.
---
-function M.get_settings_for_lang(client, setting_cfg, lang)
-	local settings, err = M.get_settings(client, setting_cfg)
-
-	if not settings then
-		return nil, err
-	end
-
-	local lang_rules = settings[lang]
-	if not lang_rules then
-		return nil, string.format(
-			"The avitve LTeX server has no %s for %s\n",
-			setting_cfg,
-			lang
-		)
-	end
-
-	return lang_rules
-end
-
-function M.get_server_rules(bufnr)
-end
-
-
 ---Returns a handler for `textDocument/publishDiagnostics` notifications.
 ---The handler collects diagnostics data using a timer to batch process it.
 ---@param accumulated_diagnostics table Table to store diagnostics data
 ---@param callback function Function called after all data is collected
----@return function # "textDocument/publishDiagnostics"-notification handler
+---@return function(table, vim.lsp.diagnostic.diagnostic, table) # "textDocument/publishDiagnostics"-notification handler
 function M.on_publish_diags(accumulated_diagnostics, callback)
+	---@type vim.loop.timer|nil
 	local diag_timer = nil
 
 	return function (
@@ -138,29 +116,25 @@ function M.on_publish_diags(accumulated_diagnostics, callback)
 	end
 end
 
---- Requests code actions for given diagnostics,
--- processes them, and triggers a final callback.
---
--- @param client The LSP client.
--- @param bufnr The buffer number.
--- @param diags List of diagnostics.
--- @param process_action Function to process each code action.
--- @param final_callback Function called when all requests have been processed.
-function M.collect_diagnostics_actions(
-	client,
-	bufnr,
-	diags,
-	process_action,
-	final_callback
-)
+---Requests code actions for given diagnostics, processes them, and triggers a
+---final callback.
+---@param client table The LTeX LSP server.
+---@param bufnr integer The buffer number.
+---@param diags vim.lsp.diagnostic.diagnostic List of diagnostics.
+---@param process_action function(string, vim.lsp.diagnostic.action[]) Function to process each code action.
+---@param final_cb function() Function called when all requests have been processed.
+function M.actions_from_diags(client, bufnr, diags, process_action, final_cb)
+	---@type integer
 	local pending_reqs = 0
 	for _, chunk in ipairs(diags) do
 		pending_reqs = pending_reqs + #chunk.diagnostics
 	end
 
 	for _, chunk in ipairs(diags) do
+		---@type string
 		local uri = chunk.uri
 		for _, diag in ipairs(chunk.diagnostics) do
+			---@type table
 			 local params = {
 				textDocument = { uri = uri },
 				range = diag.range,
@@ -182,14 +156,13 @@ function M.collect_diagnostics_actions(
 
 					-- have all request be collected?
 					if pending_reqs == 0 then
-						final_callback()
+						final_cb()
 
 						client.notify(
 							"workspace/didChangeConfiguration",
 							client.config.settings
 						)
 					end
-
 					return true
 				end,
 				bufnr
