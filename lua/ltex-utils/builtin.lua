@@ -2,21 +2,25 @@ local builtin = {}
 
 local actions = require("ltex-utils.actions")
 local Config = require("ltex-utils.config")
-local rule_ui = require("ltex-utils.rule_ui")
 
-builtin.rule_edit_cache = {}
+---@type table<integer, LTeXUtils.UI>
+builtin.wins = {}
 
-local function new_win_from_cache(setting_cfg, use_diags)
+---Creates new Telescope window for modifying rules or words.
+---@param setting_cfg string
+---@param use_diags boolean
+local function new_win(setting_cfg, use_diags)
 	use_diags = vim.F.if_nil(use_diags, false)
-	local curr_cache = builtin.rule_edit_cache[vim.api.nvim_get_current_buf()]
-	if curr_cache then
-		-- delete old list of rules
-		curr_cache.rules = nil
-		curr_cache.changes = nil
-		local ok, err = curr_cache:new_pick_rule_win(
+	---@type LTeXUtils.UI
+	local win = builtin.wins[vim.api.nvim_get_current_buf()]
+	if win then
+		-- delete old cache
+		win.cache = nil
+		---@type boolean, string|nil
+		local ok, err = win:new_pick_rule_win(
 			setting_cfg,
 			use_diags,
-			rule_ui.opts
+			Config.rule_ui.telescope
 		)
 		if not ok then
 			vim.notify(
@@ -27,26 +31,28 @@ local function new_win_from_cache(setting_cfg, use_diags)
 	end
 end
 
-builtin.write_settings_to_file = function ()
-	local curr_cache = builtin.rule_edit_cache[vim.api.nvim_get_current_buf()]
-	actions.write_ltex_to_file(curr_cache.cache.dictionary)
-end
+---Writes LTeX LSP server settings to filej
+builtin.write_settings_to_file = actions.write_ltex_to_file
 
+---Loads LTeX LSP server settings from file
 builtin.load_settings_from_file = actions.load_ltex_from_file
 
+---Opens new Telescope window to modify hidden false positive rules.
 builtin.modify_hiddenFalsePositives = function ()
-	new_win_from_cache(
+	new_win(
 		"hiddenFalsePositives",
 		Config.diagnostics.diags_false_pos
 	)
 end
 
+---Opens new Telescope window to modify disabled rules list.
 builtin.modify_disabledRules = function ()
-	new_win_from_cache("disabledRules", Config.diagnostics.diags_disable_rules)
+	new_win("disabledRules", Config.diagnostics.diags_disable_rules)
 end
 
+---Opens new Telescope window to modify dictionaries (including saved ones).
 builtin.modify_dict = function ()
-	new_win_from_cache("dictionary", false)
+	new_win("dictionary", false)
 end
 
 return builtin
