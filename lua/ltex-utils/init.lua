@@ -8,13 +8,14 @@ local rule_ui = require("ltex-utils.rule_ui")
 -- Writes current LTeX LSP server settings to file
 ---@return string|nil  # error message if writing to file fails
 local function on_exit()
+	---@type integer
 	local bufnr = vim.api.nvim_get_current_buf()
-	local cached_dict_changes = builtin.wins[bufnr].dictionary
 
 	-- delete current buffer from windows list
 	builtin.wins[bufnr] = nil
 
-	local ok, err = pcall(ltex.write_ltex_to_file, cached_dict_changes)
+	---@type boolean, string|nil
+	local ok, err = pcall(ltex.write_ltex_to_file)
 
 	if not ok then
 		vim.notify("Error on exit: " .. vim.inspect(err), vim.log.levels.ERROR)
@@ -22,9 +23,9 @@ local function on_exit()
 	end
 end
 
--- Set up autocommands in respective augroups (e.g., 'LTeXUtils')
----@return nil
+---Set up autocommands in respective augroups (e.g., 'LTeXUtils')
 local function autocmd_ltex()
+	---@type integer
 	local augroup_id = vim.api.nvim_create_augroup(
 		"LTeXUtils",
 		{ clear = true }
@@ -45,7 +46,9 @@ local function autocmd_ltex()
 		{
 			pattern = { "*.tex", "*.md" },
 			callback = function ()
+				---@type integer
 				local bufnr = vim.api.nvim_get_current_buf()
+				---@type LTeXUtils.cache|LTeXUtils.hfp_cache|LTeXUtils.words_cache
 				local cache = builtin.wins[bufnr].cache
 				if cache then
 					cache:apply_cache(bufnr)
@@ -60,6 +63,7 @@ local function autocmd_ltex()
 	vim.api.nvim_create_autocmd("User", {
 		pattern = "TelescopePreviewerLoaded",
 		callback = function(args)
+			---@type string
 			local extension = args.data.bufname:match("%.(%w+)$")
 			if extension == "md" or extension == "tex" then
 				vim.wo.number = Config.rule_ui.previewer_line_number
@@ -75,6 +79,7 @@ end
 ---@return string|nil # error message if file exists but can't be loaded
 function M.on_attach(bufnr)
 	-- Use local variables to reduce table lookup cost
+	---@type table
 	local cmds = vim.lsp.commands
 	-- Add custom LSP commands for the ltex language server
 	cmds["_ltex.addToDictionary"] = ltex.new_handler(
@@ -98,6 +103,7 @@ function M.on_attach(bufnr)
 	builtin.wins[bufnr] = rule_ui.new()
 
 	-- load server settings if they exist
+	---@type boolean, string|nil
 	local ok, err = ltex.load_ltex_from_file()
 	if not ok and err then
 		-- if settings file does not exist yet, inform user and
