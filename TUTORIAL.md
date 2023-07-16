@@ -4,9 +4,9 @@ Here we present one workflow of how to use the plugin `ltex-utils.nvim` showcasi
 **Table of Contents**
 
 1. [Code Actions](#code-actions)
-    * [Keybindings in `modify_dict` Telescope window](#keybindings-in-modifydict-telescope-window)
+    * [Keybindings in `modify_dict` Telescope window](#keybindings-in-modify_dict-telescope-window)
 2. [Updating custom dictionaries](#updating-custom-dictionaries)
-    * [Keybinding in `modify_hideFalsePositives` Telescope window](#keybindings-in-modifyhidefalsepositives-telescope-window)
+    * [Keybinding in `modify_hideFalsePositives` Telescope window](#keybindings-in-modify_hidefalsepositives-telescope-window)
 3. [Disable Rules](#disable-rules)
 
 ## Code Actions
