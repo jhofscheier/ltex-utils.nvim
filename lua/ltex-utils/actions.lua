@@ -12,7 +12,6 @@ local table_utils = require("ltex-utils.table_utils")
 ---@return function(vim.lsp.diagnostic.action.command) # The code action handler
 function M.new_handler(cmd_cfg, setting_cfg)
 	return function (command)
-		vim.notify(vim.inspect(command), vim.log.levels.ERROR)
 		---@type table|nil
 		local client = ltex_lsp.get_ltex()
 		-- if no active ltex client abort
