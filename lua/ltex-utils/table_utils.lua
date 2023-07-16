@@ -15,7 +15,7 @@ end
 ---Merges two input lists into one, removing any duplicates.
 ---@param list1 string[]
 ---@param list2 string[]
----@param changes table<string, string>
+---@param changes table<string, string>|nil
 ---@return string[]
 function M.merge_lists_unique(list1, list2, changes)
 	-- Create a table to store the unique elements
