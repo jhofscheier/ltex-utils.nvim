@@ -6,9 +6,9 @@ Neovim plugin implementing functionality for LSP code actions for [`ltex-ls`](ht
 * [`hideFalsePositive`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexhidefalsepositives-client).
 
 In addition, the plugin provides functions for loading, saving, and modifying LSP server settings and custom dictionaries.
-For a detailed overview, please refer to the tutorial.
+For a detailed overview, please refer to the [tutorial](TUTORIAL.md).
 
-There are already several other excellent Neovim plugins that provide similar functionality: for example, [LTeX\_extra.nvim](https://github.com/barreiroleo/ltex_extra.nvim), [LTeX LS Client](https://github.com/icewind/ltex-client.nvim), and [ltex-ls.nvim](https://github.com/vigoux/ltex-ls.nvim).
+There are already several excellent Neovim plugins that provide similar functionality: for example, [LTeX\_extra.nvim](https://github.com/barreiroleo/ltex_extra.nvim), [LTeX LS Client](https://github.com/icewind/ltex-client.nvim), and [ltex-ls.nvim](https://github.com/vigoux/ltex-ls.nvim).
 
 > **Question**. Why another LTeX plugin?<br> 
 >**Answer**. The last time I checked, these plugins are well written and do a fantastic job.
@@ -46,7 +46,7 @@ Install the plugin with your favourite plugin manager.
     },
 },
 ```
-Then call `ltex-utils.on_attach()` from the `on_attach` function of your server.
+Then call `ltex-utils.on_attach(bufnr)` from the `on_attach` function of your server.
 For example, with [`nvim-lspconfig`](https://github.com/neovim/nvim-lspconfig) this could look like follows:
 ```lua
 require("lspconfig").ltex.setup({
@@ -56,14 +56,14 @@ require("lspconfig").ltex.setup({
         -- for example, set keymaps here, like
         -- vim.keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, opts)
         -- (see below code block for more details)
-        require("ltex-utils").on_attach()
+        require("ltex-utils").on_attach(bufnr)
     end,
     settings = {
         ltex = { your settings },
     },
 })
 ```
-Check the [nvim-lspconfig suggested configuration](https://github.com/neovim/nvim-lspconfig#suggested-configuration) for furhter details on how to set keybindings.
+Check the [nvim-lspconfig suggested configuration](https://github.com/neovim/nvim-lspconfig#suggested-configuration) for further details on how to set keybindings.
 
 ## Configuration
 
@@ -81,13 +81,37 @@ For example, for `lazy.nvim` this could be done as follows.
         -- "nvim-telescope/telescope-fzf-native.nvim", -- optional
     },
     opts = {
-        delete_rule_key = "d",
-        dict_path = vim.api.nvim_call_function("stdpath", {"cache"}) .. "/ltex/",
-        modify_rule_key = "<CR>",
-        win_opts = {},
+        -- Path to the directory where dictionaries are stored.
+        -- Defaults to the Neovim cache directory.
+        dict_path = vim.api.nvim_call_function("stdpath", {"cache"})
+                                                                .. "/ltex/",
+        rule_ui = {
+            -- key to modify rule
+            modify_rule_key = "<CR>",
+            -- key to delete rule
+            delete_rule_key = "d",
+            -- key to cleanup deprecated rules
+            cleanup_rules_key = "c",
+            -- key to jump to respective place in file
+            goto_key = "g",
+            -- enable line numbers in preview window
+            previewer_line_number = true,
+            -- wrap lines in preview window
+            previewer_wrap = true,
+            -- options for creating new telescope windows
+            telescope = { bufnr = 0 },
+        },
+        diagnostics = {
+            -- time to wait for language tool to complete parsing document
+            -- debounce time in milliseconds
+            debounce_time_ms = 500,
+            -- use diagnostics data for modifying hiddenFalsePositives rules
+            diags_false_pos = true,
+            -- use diagnostics data for modifying disabledRules rules
+            diags_disable_rules = true,
+        },
     },
 },
-
 ```
 
 ## Usage
