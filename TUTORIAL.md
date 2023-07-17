@@ -5,6 +5,7 @@ Here we present one workflow of how to use the plugin `ltex-utils.nvim` showcasi
 
 1. [Code Actions](#code-actions)
     * [Keybindings in `modify_dict` Telescope window](#keybindings-in-modify_dict-telescope-window)
+    * [Caveats: enhance managing rules with diagnostics](#caveats-enhance-managing-rules-with-diagnostics)
 2. [Updating custom dictionaries](#updating-custom-dictionaries)
     * [Keybinding in `modify_hideFalsePositives` Telescope window](#keybindings-in-modify_hidefalsepositives-telescope-window)
 3. [Disable Rules](#disable-rules)
@@ -80,7 +81,7 @@ Notice that there are 2 issues in this sentence, and we have selected the first 
 Let's hide the 'Possible spelling mistake found.' issue by executing the code action `hideFalsePositives`.
 Notice that the second issue in this sentence also disappears.
 It's worth mentioning that adding a rule for a false positive will hide all issues of a sentence.
-Therefore, I recommend using 'hide false positives' code actions frugally.
+Therefore, I recommend using 'hide false positives' code actions sparingly.
 (Here by 'sentence' we mean in the sense of how LanguageTool defines the notion of sentences.
 In most cases this coincides with our understanding of 'sentence', but not always.)
 
@@ -110,6 +111,18 @@ Notice that the order of the rules is preserved, however modified rules are mark
 
 Finally, you can quickly navigate to the specific line and column in the text where the issue is located (corresponding to the selected entry) by pressing `g` in **normal mode**.
 
+### Caveats: enhance managing rules with diagnostics
+To manage false positives, it's suggested to use `:LTeXUtils modify_hiddenFalsePositives`.
+Additionally, leveraging diagnostic data can significantly enhance your experience when adjusting the false positives rules.
+To activate this feature set `diagnostics.diags_false_pos = true` (see the [Configuration](README.md#configuration) Section of the [README](README.md)).
+Be aware, however, that then invoking `:LTeXUtils modify_hiddenFalsePositives` comes at a cost.
+Each call temporarily resets the server settings, thereby enabling the retrieval of all diagnostic data.
+As a consequence, the time taken for LanguageTool to reprocess the source file can be significant, depending on the file's size.
+
+To mitigate this, consider adjusting the `debounce_time_ms` configuration setting as outlined in the [Configuration Section](README.md#configuration) of the [README](README.md).
+This setting controls the delay time waiting for LanguageTool.
+A smaller value results in a quicker response time for opening the Telescope window, but at the expense of potentially incomplete LanguageTool processing.
+On my system, `500` has proven to be a good choice, though you may need to tweak this depending on your specific needs and setup.
 
 ### Keybindings in `modify_hideFalsePositives` Telescope window
 | mode          | key    | description                                                                                                 |
