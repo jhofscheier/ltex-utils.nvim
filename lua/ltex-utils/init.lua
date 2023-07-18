@@ -1,7 +1,7 @@
 local M = {}
 
-local Config = require("ltex-utils.config")
 local builtin = require("ltex-utils.builtin")
+local Config = require("ltex-utils.config")
 local ltex = require("ltex-utils.actions")
 local rule_ui = require("ltex-utils.rule_ui")
 
