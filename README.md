@@ -130,6 +130,8 @@ The `:LTeXUtils modify_dict` command allows you to inspect, edit, or delete entr
 
 To examine, change, or remove entries in the `disabledRules` or `hiddenFalsePositives` lists, use the `:LTeXUtils modify_disabledRules` or `:LTeX modify_hiddenFalsePositives` commands respectively.
 
+To switch the display of the LTeX LSP server's diagnostics between 'on' and 'off' use `:LTeXUtils toggle_diagnostics`.
+
 More details can be found in the [tutorial](TUTORIAL.md).
 
 ## Caveats
