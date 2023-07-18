@@ -2,6 +2,7 @@ local builtin = {}
 
 local actions = require("ltex-utils.actions")
 local Config = require("ltex-utils.config")
+local diagnostics = require("ltex-utils.diagnostics")
 
 ---@type table<integer, LTeXUtils.UI>
 builtin.wins = {}
@@ -53,6 +54,11 @@ end
 ---Opens new Telescope window to modify dictionaries (including saved ones).
 builtin.modify_dict = function ()
 	new_win("dictionary", false)
+end
+
+---Toggles the LTeX diagnostics hints on/off
+builtin.toggle_diagnostics = function ()
+	diagnostics.toggle_diags(vim.api.nvim_get_current_buf())
 end
 
 return builtin
