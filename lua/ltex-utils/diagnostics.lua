@@ -1,13 +1,5 @@
 local M = {}
 
----Checks if string `str` starts with string `start`
----@param str string
----@param start string
----@return boolean	
-local function starts_with(str, start)
-	return str:sub(1, #start) == start
-end
-
 ---Returns the namespace of LTeX LSP server for buffer `bufnr`; nil if not
 ---successful.
 ---@param bufnr integer
@@ -16,7 +8,7 @@ local function get_ltex_namespace(bufnr)
 	---@type string
 	local lsp_server_name = "vim.lsp.ltex." .. tostring(bufnr)
 	for ns, ns_metadata in pairs(vim.diagnostic.get_namespaces()) do
-		if starts_with(ns_metadata.name, lsp_server_name) then
+		if vim.startswith(ns_metadata.name, lsp_server_name) then
 			return ns
 		end
 	end
