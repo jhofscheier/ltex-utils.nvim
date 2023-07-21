@@ -48,10 +48,10 @@ local function autocmd_ltex()
 			callback = function ()
 				---@type integer
 				local bufnr = vim.api.nvim_get_current_buf()
-				---@type LTeXUtils.cache|LTeXUtils.hfp_cache|LTeXUtils.words_cache
-				local cache = builtin.wins[bufnr].cache
-				if cache then
-					cache:apply_cache(bufnr)
+				---@type LTeXUtils.UI|nil
+				local wins = builtin.wins[bufnr]
+				if wins ~= nil and wins.cache ~= nil then
+					wins.cache:apply_cache(bufnr)
 				end
 				vim.diagnostic.show()
 			end,
