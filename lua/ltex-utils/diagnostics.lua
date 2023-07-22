@@ -5,13 +5,27 @@ local M = {}
 ---@param bufnr integer
 ---@return integer|nil
 local function get_ltex_namespace(bufnr)
+	---@type integer
+	local id
+	for _, client in ipairs(vim.lsp.get_active_clients({ bufnr = bufnr })) do
+		if client.name == "ltex" then
+			id = client.id
+			break
+		end
+	end
+
+	if id == nil then
+		return nil
+	end
+
 	---@type string
-	local lsp_server_name = "vim.lsp.ltex." .. tostring(bufnr)
+	local lsp_server_name = "vim.lsp.ltex." .. tostring(id)
 	for ns, ns_metadata in pairs(vim.diagnostic.get_namespaces()) do
 		if vim.startswith(ns_metadata.name, lsp_server_name) then
 			return ns
 		end
 	end
+
 	return nil
 end
 
