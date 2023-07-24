@@ -41,9 +41,6 @@ function M:apply_cache(bufnr)
 		---@type Telescope.entry
 		local entry = self.data[i]
 		if entry then
-			if entry.type == severities[2] then
-				break
-			end
 			---@type string, string
 			local lang, word = self.selection_to_lang_rule(entry)
 			table.insert(dicts[lang], word)
@@ -56,8 +53,9 @@ function M:apply_cache(bufnr)
 
 	for lang, dict in pairs(dicts) do
 		---@type string
-		local filename = Config.dict_path .. lang .. ".json"
-		settings_io.write_settings(filename, dict)
+		local filename = Config.dictionary.path ..
+											Config.dictionary.filename(lang)
+		settings_io.write_dictionary(filename, dict)
 	end
 
 	-- clean up cache for later reuse
@@ -79,7 +77,7 @@ local function add_saved_dicts(self, bufnr, settings)
 	local filename = vim.api.nvim_buf_get_name(bufnr)
 	---@type table<string, string[]>
 	local saved_dicts = {}
-	saved_dicts = settings_io.load_dictionaries(Config.dict_path, self.langs)
+	saved_dicts = settings_io.load_dictionaries(self.langs)
 
 	for lang, dict in pairs(saved_dicts) do
 		for _, word in ipairs(dict) do

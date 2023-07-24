@@ -53,11 +53,8 @@ function M.write_ltex_to_file()
 	local langs
 	-- save dictionaries; update them if necessary
 	if settings.dictionary then
-		settings_io.ensure_folder_exists(Config.dict_path)
-		langs = settings_io.update_dictionary_files(
-			Config.dict_path,
-			settings.dictionary
-		)
+		settings_io.ensure_folder_exists(Config.dictionary.path)
+		langs = settings_io.update_dictionary_files(settings.dictionary)
 	end
 
 	---@type table<string, string[]>
@@ -121,7 +118,6 @@ function M.load_ltex_from_file()
 		end
 		-- read the required dictionaries
 		client_settings.dictionary =  settings_io.load_dictionaries(
-			Config.dict_path,
 			saved_settings.langs
 		)
 	end
