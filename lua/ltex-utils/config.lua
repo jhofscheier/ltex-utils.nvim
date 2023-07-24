@@ -1,13 +1,24 @@
 local M = {}
 
 ---@class LTeXUtils.Config
----@field dict_path? string
+---@field dictionary? table
 ---@field rule_ui? RuleUi.Config
 ---@field diagnostics? Diagnostics.Config
 local defaults = {
-	-- Path to the directory where dictionaries are stored.
-	-- Defaults to the Neovim cache directory.
-	dict_path = vim.api.nvim_call_function("stdpath", {"cache"}) .. "/ltex/",
+	---@class Dictionary.Config
+	---@field path string
+	---@field filename function(string): string
+	dictionary = {
+		-- Path to the directory where dictionaries are stored.
+		-- Defaults to the Neovim cache directory.
+		path = vim.api.nvim_call_function("stdpath", {"cache"}) .. "/ltex/",
+		---Returns the dictionary file name for given language `lang`
+		---@param lang string
+		---@return string
+		filename = function(lang)
+			return lang .. ".txt"
+		end,
+	},
 	---@class RuleUi.Config
 	---@filed modify_rule_key string
 	---@field delete_rule_key string
