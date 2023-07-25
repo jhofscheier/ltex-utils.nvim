@@ -6,64 +6,37 @@ local uv = vim.loop
 
 local M = {}
 
----Reads a dictionary file where each word is on a separate line.
+-- use local variables to safe lookup costs
+local ERROR = vim.log.levels.ERROR
+
+---Reads file at `filename` and returns its contents as a string
 ---@param filename string
----@return string[]|nil
 ---@return string|nil
-function M.read_dictionary(filename)
-	---@type vim.file|nil, string
+---@return nil|string
+local function read(filename)
+	---@type integer|nil, nil|string
 	local fd, err_open = uv.fs_open(filename, "r", 438) -- 438 = 0o666
-	if not fd then
-		return nil, err_open
-	end
-
-	---@type table|nil, string
-	local stat, err_stat = uv.fs_fstat(fd)
-	if not stat then
-		return nil, err_stat
-	end
-	---@type integer
-	local file_size = stat.size or 0
-
-	---@type string|nil, string
-	local data, err_read = uv.fs_read(fd, file_size, 0)
-	if not data then
-		return nil,err_read
-	end
-
-	---@type boolean, string|nil
-	local ok_close, err_close = pcall(uv.fs_close, fd)
-	if not ok_close then
-		return nil, err_close
-	end
-
-	return vim.split(vim.trim(data), "\n"), nil
-end
-
- ---Reads and decodes a JSON file.
- ---@param filename string name (path) of the file to be read an decoded
- ---@return table|nil # returns decoded content if successful; `nil` when an error occurs
- ---@return string|nil # respective error message or nil if successful
-function M.read_settings(filename)
-	---@type vim.file|nil, string
-	local fd, err_open = uv.fs_open(filename, "r", 420)  -- 420 = 0o644
-	if not fd then
+--	---@type vim.file|nil, string|nil
+--	local fd, err_open = uv.fs_open(filename, "r", 420)  -- 420 = 0o644
+	if err_open then
 		return nil, err_open
 	end
 
 	-- Get the file size
-	---@type table|nil, string
+	---@type table|nil, nil|string
 	local stat, err_stat = uv.fs_fstat(fd)
-	if not stat then
+	if err_stat then
 		return nil, err_stat
 	end
+
+	---@cast stat table
 	---@type integer
 	local file_size = stat.size or 0
 
 	-- Read the contents of the file
-	---@type string|nil, string
-	local contents, err_read = uv.fs_read(fd, file_size, 0)
-	if not contents then
+	---@type string|nil, nil|string
+	local data, err_read = uv.fs_read(fd, file_size, 0)
+	if err_read then
 		return nil, err_read
 	end
 
@@ -73,6 +46,35 @@ function M.read_settings(filename)
 		return nil, err_close
 	end
 
+	return data, nil
+end
+
+---Reads a dictionary file where each word is on a separate line.
+---@param filename string
+---@return string[]|nil
+---@return nil|string
+function M.read_dictionary(filename)
+	local data, err = read(filename)
+
+	if err then
+		return nil, err
+	end
+
+	---@cast data string
+	return vim.split(vim.trim(data), "\n"), nil
+end
+
+ ---Reads and decodes a JSON file.
+ ---@param filename string name (path) of the file to be read an decoded
+ ---@return table|nil # returns decoded content if successful; `nil` when an error occurs
+ ---@return nil|string # respective error message or nil if successful
+function M.read_settings(filename)
+	local contents, err = read(filename)
+	if err then
+		return nil, err
+	end
+
+	---@cast contents string
 	---@type boolean, table|string|nil
 	local ok_decode, contents_json = pcall(vim.json.decode, contents)
 	if not ok_decode then
@@ -85,79 +87,55 @@ function M.read_settings(filename)
 	return contents_json, nil
 end
 
----Writes dictionary `dict` to file at `filepath`
----@param filepath string Path to file in which to save the dictionary
----@param dict string[] List of words comprising the dictionary
-function M.write_dictionary(filepath, dict)
-	vim.schedule(function()
-		---@type vim.file|nil, string
-		local fd, err_open = uv.fs_open(filepath, "w", 438) -- 438 = 0o666
-		if not fd then
-			vim.notify(
-				"Error opening file: " .. err_open,
-				vim.log.levels.ERROR
+---Asynchronously writes `data` to file at `filepath`
+---@param filepath string path to target file
+---@param data string data to write
+function M.write(filepath, data)
+	uv.fs_open(filepath, "w", 438,       -- 438 = 0o666
+		---@param err_open nil|string
+		---@param fd integer|nil
+		function(err_open, fd)
+			if err_open then
+				vim.notify("Error opening file: " .. err_open, ERROR)
+				return
+			end
+			uv.fs_write(fd, data, -1,
+				---@param err_write nil|string
+				---@param _ integer|nil bytes written
+				function(err_write, _)
+					if err_write then
+						vim.notify("Error writing to file: " ..
+												vim.inspect(err_write), ERROR)
+					end
+					uv.fs_close(fd,
+						---@param err_close nil|string
+						---@param _ boolean|nil
+						function(err_close, _)
+							if err_close then
+								vim.notify("Error closing file: " ..
+												vim.inspect(err_close), ERROR)
+							end
+						end
+					)
+				end
 			)
-			return
 		end
-		---@type boolean, string|nil
-		local ok, err = pcall(uv.fs_write, fd, table.concat(dict, "\n"), -1)
-		if not ok then
-			vim.notify(
-				"Error writing to file: " .. vim.inspect(err),
-				vim.log.levels.ERROR
-			)
-			return
-		end
-		ok, err = pcall(uv.fs_close, fd)
-		if not ok then
-			vim.notify(
-				"Error closing file: " .. vim.inspect(err),
-				vim.log.levels.ERROR
-			)
-			return
-		end
-	end)
+	)
 end
 
----Write `settings` to json file specified by `filepath`.
----@param filepath string Path to file where settings should be saved
----@param settings table Table of settings to be saved
-function M.write_settings(filepath, settings)
-	vim.schedule(function()
-		---@type vim.file|nil, string
-		local fd, err_open = uv.fs_open(filepath, "w", 438) -- 438 = 0o666
-		if not fd then
-			vim.notify(
-				"Error opening file: " .. err_open,
-				vim.log.levels.ERROR
-			)
-			return
-		end
-		---@type boolean, string|nil
-		local ok, err = pcall(
-								uv.fs_write,
-								fd,
-								vim.json.encode(settings),
-								-1
-							 )
-		if not ok then
-			vim.notify(
-				"Error writing to file: " .. vim.inspect(err),
-				vim.log.levels.ERROR
-			)
-			return
-		end
+-----Writes dictionary `dict` to file at `filepath`
+-----@param filepath string Path to file in which to save the dictionary
+-----@param dict string[] List of words comprising the dictionary
+--function M.write_dictionary(filepath, dict)
+--	M.write(filepath, table.concat(dict, "\n"))
+--end
 
-		ok, err = pcall(uv.fs_close, fd)
-		if not ok then
-			vim.notify(
-				"Error closing file: " .. vim.inspect(err),
-				vim.log.levels.ERROR
-			)
-			return
-		end
-	end)
-end
+-----Write `settings` to json file specified by `filepath`.
+-----@param filepath string Path to file where settings should be saved
+-----@param settings table Table of settings to be saved
+--function M.write_settings(filepath, settings)
+--	M.write(filepath, vim.json.encode(settings))
+--end
 
 ---Check if the folder exists and create it if not
 ---@param path string
@@ -171,10 +149,7 @@ function M.ensure_folder_exists(path)
 		local ok, err = pcall(uv.fs_mkdir, path, 448) -- octal representation of the permission bits (0700)
 		if not ok then
 			-- Handle any error during folder creation
-			vim.notify(
-				"Error creating folder: " .. vim.inspect(err),
-				vim.log.levels.ERROR
-			)
+			vim.notify("Error creating folder: " .. vim.inspect(err), ERROR)
 			return err
 		end
 	end
@@ -197,7 +172,7 @@ function M.update_dictionary_files(dictionaries)
 		if saved_dict then
 			dict = table_utils.merge_lists_unique(dict, saved_dict)
 		end
-		M.write_dictionary(filename, dict)
+		M.write(filename, table.concat(dict, "\n"))
 		table.insert(used_langs, lang)
 	end
 
@@ -218,10 +193,7 @@ function M.load_dictionaries(langs)
 		if not dict then
 			-- if error, update user about problem and continue
 			-- loading remaining dictionaries
-			vim.notify(
-				"Error loading dicitonary: " .. vim.inspect(err),
-				vim.log.levels.ERROR
-			)
+			vim.notify("Error loading dicitonary: " .. vim.inspect(err), ERROR)
 		else
 			server_dics[lang] = dict
 		end
