@@ -18,6 +18,8 @@ local defaults = {
 		filename = function(lang)
 			return lang .. ".txt"
 		end,
+		-- use vim internal dictionary to add unkown words
+		use_vim_dict = false,
 	},
 	---@class RuleUi.Config
 	---@filed modify_rule_key string
@@ -61,11 +63,21 @@ local defaults = {
 ---@type LTeXUtils.Config
 local options
 
-
 ---@param opts? LTeXUtils.Config
 function M.setup(opts)
 	opts = opts or {}
-	options = vim.tbl_deep_extend("force", defaults, opts)
+	local vim_dict_settings = opts.dictionary and opts.dictionary.use_vim_dict
+		and {
+				dictionary = {
+					path = vim.fn.stdpath("config") .. "/spell/",
+					filename = function(lang)
+						return string.match(lang, "^(%a+)-") .. "." ..
+						vim.api.nvim_buf_get_option(0, "fileencoding") ..
+						".add"
+					end,
+				}
+			} or {}
+	options = vim.tbl_deep_extend("force", defaults, vim_dict_settings, opts)
 end
 
 return setmetatable(M, {

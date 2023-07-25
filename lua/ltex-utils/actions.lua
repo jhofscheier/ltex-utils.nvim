@@ -51,10 +51,16 @@ function M.write_ltex_to_file()
 
 	---@type string[]
 	local langs
-	-- save dictionaries; update them if necessary
-	if settings.dictionary then
-		settings_io.ensure_folder_exists(Config.dictionary.path)
-		langs = settings_io.update_dictionary_files(settings.dictionary)
+	if Config.dictionary.use_vim_dict then
+		-- Neovim takes care of saving dictionaries
+		-- only remember used languages
+		langs = vim.tbl_keys(settings.dictionary)
+	else
+		-- save dictionaries; update them if necessary
+		if settings.dictionary then
+			settings_io.ensure_folder_exists(Config.dictionary.path)
+			langs = settings_io.update_dictionary_files(settings.dictionary)
+		end
 	end
 
 	---@type table<string, string[]>
@@ -76,7 +82,7 @@ function M.write_ltex_to_file()
 		---@type string
 		local head = vim.fn.expand("%:p:h") .. "/" .. vim.fn.expand("%:t:r")
 											.. "_" .. vim.fn.expand("%:e")
-		settings_io.write_settings(head .. "_ltex.json", settings_to_save)
+		settings_io.write(head .. "_ltex.json", vim.json.encode(settings_to_save))
 	end
 end
 

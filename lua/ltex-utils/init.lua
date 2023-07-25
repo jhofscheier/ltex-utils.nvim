@@ -81,11 +81,25 @@ function M.on_attach(bufnr)
 	-- Use local variables to reduce table lookup cost
 	---@type table
 	local cmds = vim.lsp.commands
+
+	---@type function(table)
+	local dict_handler = ltex.new_handler("words", "dictionary")
 	-- Add custom LSP commands for the ltex language server
-	cmds["_ltex.addToDictionary"] = ltex.new_handler(
-		"words",
-		"dictionary"
-	)
+	cmds["_ltex.addToDictionary"] = Config.dictionary.use_vim_dict and
+	function(command)
+		dict_handler(command)
+		-- save previously used spelllang for current buffer
+		local spelllang = vim.api.nvim_buf_get_option(0, "spelllang")
+		for lang, words in pairs(command.arguments[1]["words"]) do
+			vim.api.nvim_set_option("spelllang", string.match(lang, "^(%a+)-"))
+			for word in ipairs(words) do
+				vim.api.nvim_command("spellgood " .. word)
+			end
+		end
+		-- restore spelllang
+		vim.api.nvim_set_option("spelllang", spelllang)
+	end or dict_handler
+
 	cmds["_ltex.hideFalsePositives"] = ltex.new_handler(
 		"falsePositives",
 		"hiddenFalsePositives"

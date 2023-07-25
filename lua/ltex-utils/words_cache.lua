@@ -55,7 +55,14 @@ function M:apply_cache(bufnr)
 		---@type string
 		local filename = Config.dictionary.path ..
 											Config.dictionary.filename(lang)
-		settings_io.write_dictionary(filename, dict)
+		settings_io.write(filename, table.concat(dict, "\n"))
+		if Config.dictionary.use_vim_dict then
+			vim.api.nvim_cmd({
+				cmd = "mkspell",
+				bang = true,
+				args = { filename },
+			}, { false })
+		end
 	end
 
 	-- clean up cache for later reuse
