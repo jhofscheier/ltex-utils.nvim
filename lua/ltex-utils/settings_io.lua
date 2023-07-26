@@ -133,20 +133,6 @@ function M.write(filepath, data, callback)
 	)
 end
 
------Writes dictionary `dict` to file at `filepath`
------@param filepath string Path to file in which to save the dictionary
------@param dict string[] List of words comprising the dictionary
---function M.write_dictionary(filepath, dict)
---	M.write(filepath, table.concat(dict, "\n"))
---end
-
------Write `settings` to json file specified by `filepath`.
------@param filepath string Path to file where settings should be saved
------@param settings table Table of settings to be saved
---function M.write_settings(filepath, settings)
---	M.write(filepath, vim.json.encode(settings))
---end
-
 ---Check if the folder exists and create it if not
 ---@param path string
 ---@return string|nil

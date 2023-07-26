@@ -89,13 +89,10 @@ function M.on_attach(bufnr)
 	function(command)
 		dict_handler(command)
 		-- save previously used spelllang for current buffer
---		local spelllang = vim.api.nvim_buf_get_option(0, "spelllang")
 		local spellfile = vim.api.nvim_buf_get_option(0, "spellfile")
 		for lang, words in pairs(command.arguments[1]["words"]) do
 			vim.api.nvim_buf_set_option(0, "spellfile", Config.dictionary.path
 										.. Config.dictionary.filename(lang))
---			vim.api.nvim_buf_set_option(0, "spelllang",
---												string.match(lang, "^(%a+)-"))
 			for _, word in ipairs(words) do
 				vim.api.nvim_cmd({
 					cmd = "spellgood",
@@ -105,7 +102,6 @@ function M.on_attach(bufnr)
 		end
 		-- restore spellfile and spelllang
 		vim.api.nvim_buf_set_option(0, "spellfile", spellfile)
---		vim.api.nvim_buf_set_option(0, "spelllang", spelllang)
 	end or dict_handler
 
 	cmds["_ltex.hideFalsePositives"] = ltex.new_handler(
