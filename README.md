@@ -81,10 +81,19 @@ For example, for `lazy.nvim` this could be done as follows.
         -- "nvim-telescope/telescope-fzf-native.nvim", -- optional
     },
     opts = {
-        -- Path to the directory where dictionaries are stored.
-        -- Defaults to the Neovim cache directory.
-        dict_path = vim.api.nvim_call_function("stdpath", {"cache"})
-                                                                .. "/ltex/",
+        dictionary = {
+            -- Path to the directory where dictionaries are stored.
+            -- Defaults to the Neovim cache directory.
+            path = vim.api.nvim_call_function("stdpath", {"cache"}) .. "/ltex/",
+            ---Returns the dictionary file name for given language `lang`
+            filename = function(lang)
+                return lang .. ".txt"
+            end,
+            -- use vim internal dictionary to add unkown words
+            use_vim_dict = false,
+            -- show/suppress vim command output such as `spellgood` or `mkspell`
+            vim_cmd_output = false,
+        },
         rule_ui = {
             -- key to modify rule
             modify_rule_key = "<CR>",
@@ -113,6 +122,30 @@ For example, for `lazy.nvim` this could be done as follows.
     },
 },
 ```
+When the `use_vim_dict` option is set to `true`, the configuration settings `path` and `filename` are automatically assigned the following default values:
+
+```lua
+dictionary = {
+    path = vim.fn.stdpath("config") .. "/spell/",
+    filename = function(lang)
+        return string.match(lang, "^(%a+)-") .. "." ..
+        vim.api.nvim_buf_get_option(0, "fileencoding") ..
+        ".add"
+    end,
+}
+```
+
+You can overwrite this behaviour by setting these options yourself.
+
+When `use_vim_dict` is enabled, the plugin uses vim's internal functions to manage dictionaries.
+For example:
+* The 'Add word to dictionary' code actions uses vim's `spellgood` command to add new words into the internal dictionary.
+* `LTeXUtils modify_dict` runs `mkspell` upon exit.
+
+This configuration can be advantageous if you prefer to use a single dictionary for both `ltex-ls` and vim's built-in spell checker.
+
+Alternatively, if you want more control over the dictionary, you may set `use_vim_dict` to `false` while configuring `path` and `filename` to update vim's internal dictionary for additional words accordingly.
+Please note that in this case, you will be required to manually execute the `mkspell` command.
 
 ## Usage
 Using the mentioned configuration above, activate code actions by pressing `<leader>-ca`.
