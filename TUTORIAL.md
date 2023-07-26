@@ -4,11 +4,12 @@ Here we present one workflow of how to use the plugin `ltex-utils.nvim` showcasi
 **Table of Contents**
 
 1. [Code Actions](#code-actions)
-    * [Keybindings in `modify_dict` Telescope window](#keybindings-in-modify_dict-telescope-window)
-    * [Caveats: enhance managing rules with diagnostics](#caveats-enhance-managing-rules-with-diagnostics)
+    1. [Caveats: enhance managing rules with diagnostics](#caveats-enhance-managing-rules-with-diagnostics)
+    2. [Keybindings in `modify_dict` Telescope window](#keybindings-in-modify_dict-telescope-window)
 2. [Updating custom dictionaries](#updating-custom-dictionaries)
-    * [Keybinding in `modify_hideFalsePositives` Telescope window](#keybindings-in-modify_hidefalsepositives-telescope-window)
+    1. [Keybinding in `modify_hideFalsePositives` Telescope window](#keybindings-in-modify_hidefalsepositives-telescope-window)
 3. [Disable Rules](#disable-rules)
+    1. [Disable `ltex-ls` Spell Checking](#disable-ltex-ls-spell-checking)
 
 ## Code Actions
 Let us open the [`README.md`](README.md) file of this repository.
@@ -137,3 +138,9 @@ On my system, `500` has proven to be a good choice, though you may need to tweak
 In order to add, delete, or modify these rules follow the instructions given in the Section [Hide False Positives](#hide-false-positives).
 Also, keybindings in the Telescope window are identical.
 
+## Disable `ltex-ls` Spell Checking
+Should you prefer using vim's built-in spell checker and wish to turn off spell checking functionality provided by `ltex-ls`, you can disable the rule denoted as `MORFOLOGIK_RULE_[language identifier]` (replace `[language identifier]` with the corresponding language identifier).
+For example, for `EN_US`, the respective rule will be `MORFOLOGIK_RULE_EN_US`.
+
+You will need to activate the built-in spell checker yourself.
+This can typically be done with a command such as `set spell=en`.
