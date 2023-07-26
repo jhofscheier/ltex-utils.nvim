@@ -97,7 +97,7 @@ function M.on_attach(bufnr)
 				vim.api.nvim_cmd({
 					cmd = "spellgood",
 					args = { word, },
-				}, { output = Config.dictionary.no_vim_output, })
+				}, { output = not Config.dictionary.vim_cmd_output, })
 			end
 		end
 		-- restore spellfile and spelllang

@@ -65,7 +65,7 @@ function M:apply_cache(bufnr)
 						args = { filename, },
 						bang = true,
 						cmd = "mkspell",
-					}, { output = Config.dictionary.no_vim_output })
+					}, { output = not Config.dictionary.vim_cmd_output })
 				end)
 			end or nil
 		)
