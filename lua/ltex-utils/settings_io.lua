@@ -61,6 +61,16 @@ function M.read_dictionary(filename)
 		return nil, err
 	end
 
+-------------------------------------------------------------------------------
+	---Delete this eventually. Only there to simplify switch to new
+	---dictionary file format.
+	---@cast data string
+	local ok_json, contents_json = pcall(vim.json.decode, data)
+	if ok_json then
+		return contents_json, nil
+	end
+-------------------------------------------------------------------------------
+
 	---@cast data string
 	local dict = vim.split(vim.trim(data), "\n")
 	if dict[#dict] == "" then
