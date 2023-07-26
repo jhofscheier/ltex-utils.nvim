@@ -123,7 +123,7 @@ function M.load_ltex_from_file()
 			client_settings.dictionary = {}
 		end
 		-- read the required dictionaries
-		client_settings.dictionary =  settings_io.load_dictionaries(
+		client_settings.dictionary = settings_io.load_dictionaries(
 			saved_settings.langs
 		)
 	end

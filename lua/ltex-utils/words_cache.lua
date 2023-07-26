@@ -55,14 +55,20 @@ function M:apply_cache(bufnr)
 		---@type string
 		local filename = Config.dictionary.path ..
 											Config.dictionary.filename(lang)
-		settings_io.write(filename, table.concat(dict, "\n"))
-		if Config.dictionary.use_vim_dict then
-			vim.api.nvim_cmd({
-				cmd = "mkspell",
-				bang = true,
-				args = { filename },
-			}, { false })
-		end
+		settings_io.write(
+			filename,
+			table.concat(dict, "\n") .. "\n",
+			Config.dictionary.use_vim_dict and function ()
+				-- nvim_cmd needs to run on the main event loop
+				vim.schedule(function ()
+					vim.api.nvim_cmd({
+						args = { filename, },
+						bang = true,
+						cmd = "mkspell",
+					}, { output = Config.dictionary.no_vim_output })
+				end)
+			end or nil
+		)
 	end
 
 	-- clean up cache for later reuse

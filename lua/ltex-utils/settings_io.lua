@@ -1,4 +1,4 @@
-local conf_dict = require("ltex-utils.config").dictionary
+local Config = require("ltex-utils.config")
 local table_utils = require("ltex-utils.table_utils")
 local uv = vim.loop
 
@@ -50,6 +50,7 @@ local function read(filename)
 end
 
 ---Reads a dictionary file where each word is on a separate line.
+---Notice that dictionaries end with an emtpy newline.
 ---@param filename string
 ---@return string[]|nil
 ---@return nil|string
@@ -61,7 +62,12 @@ function M.read_dictionary(filename)
 	end
 
 	---@cast data string
-	return vim.split(vim.trim(data), "\n"), nil
+	local dict = vim.split(vim.trim(data), "\n")
+	if dict[#dict] == "" then
+		table.remove(dict, #dict)
+	end
+
+	return dict, nil
 end
 
  ---Reads and decodes a JSON file.
@@ -90,7 +96,8 @@ end
 ---Asynchronously writes `data` to file at `filepath`
 ---@param filepath string path to target file
 ---@param data string data to write
-function M.write(filepath, data)
+---@param callback function|nil function to be executed after writing
+function M.write(filepath, data, callback)
 	uv.fs_open(filepath, "w", 438,       -- 438 = 0o666
 		---@param err_open nil|string
 		---@param fd integer|nil
@@ -114,6 +121,9 @@ function M.write(filepath, data)
 							if err_close then
 								vim.notify("Error closing file: " ..
 												vim.inspect(err_close), ERROR)
+							end
+							if callback then
+								callback()
 							end
 						end
 					)
@@ -165,14 +175,15 @@ function M.update_dictionary_files(dictionaries)
 	local used_langs = {}
 	for lang, dict in pairs(dictionaries) do
 		---@type string
-		local filename = conf_dict.path .. conf_dict.filename(lang)
+		local filename = Config.dictionary.path ..
+											Config.dictionary.filename(lang)
 		---@type string[]|nil
 		local saved_dict = M.read_dictionary(filename)
 		-- if there is already a saved dictionary merge it with current one
 		if saved_dict then
 			dict = table_utils.merge_lists_unique(dict, saved_dict)
 		end
-		M.write(filename, table.concat(dict, "\n"))
+		M.write(filename, table.concat(dict, "\n") .. "\n")
 		table.insert(used_langs, lang)
 	end
 
@@ -188,12 +199,14 @@ function M.load_dictionaries(langs)
 	for _, lang in ipairs(langs) do
 		---@type string[]|nil, string|nil
 		local dict, err = M.read_dictionary(
-			conf_dict.path .. conf_dict.filename(lang)
+			Config.dictionary.path .. Config.dictionary.filename(lang)
 		)
-		if not dict then
-			-- if error, update user about problem and continue
-			-- loading remaining dictionaries
-			vim.notify("Error loading dicitonary: " .. vim.inspect(err), ERROR)
+		if err then
+			if string.sub(err, 1, 6) ~= 'ENOENT' then
+				-- if error, update user about problem and continue
+				-- loading remaining dictionaries
+				vim.notify("Error loading dicitonary: " .. err, ERROR)
+			end
 		else
 			server_dics[lang] = dict
 		end

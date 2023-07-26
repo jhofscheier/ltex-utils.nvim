@@ -20,6 +20,7 @@ local defaults = {
 		end,
 		-- use vim internal dictionary to add unkown words
 		use_vim_dict = false,
+		no_vim_output = true,
 	},
 	---@class RuleUi.Config
 	---@filed modify_rule_key string
