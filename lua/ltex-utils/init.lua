@@ -53,7 +53,6 @@ local function autocmd_ltex()
 				if wins ~= nil and wins.cache ~= nil then
 					wins.cache:apply_cache(bufnr)
 				end
-				vim.diagnostic.show()
 			end,
 			group = augroup_id,
 			desc = "apply cached rule changes",
