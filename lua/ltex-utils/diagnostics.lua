@@ -4,7 +4,7 @@ local M = {}
 ---successful.
 ---@param bufnr integer
 ---@return integer|nil
-local function get_ltex_namespace(bufnr)
+function M.get_ltex_namespace(bufnr)
 	---@type integer
 	local id
 	for _, client in ipairs(vim.lsp.get_active_clients({ bufnr = bufnr })) do
@@ -35,7 +35,7 @@ function M.toggle_diags(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
 	---@type integer|nil
-	local ns = get_ltex_namespace(bufnr)
+	local ns = M.get_ltex_namespace(bufnr)
 	if not ns then
 		vim.notify("Error in toggle_diags: no namespace for LTeX LSP server")
 		return
