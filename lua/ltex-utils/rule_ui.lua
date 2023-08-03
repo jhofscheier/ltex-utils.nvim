@@ -1,5 +1,6 @@
 local Config = require("ltex-utils.config")
 local cache = require("ltex-utils.cache")
+local diagnostics = require("ltex-utils.diagnostics")
 local hfp_cache = require("ltex-utils.hfp_cache")
 local words_cache = require("ltex-utils.words_cache")
 -- Telescope
@@ -245,7 +246,9 @@ function rule_ui:new_telescope_win(opts, use_diags)
 					---@type table
 					local selection = action_state.get_selected_entry()
 					telescope_actions.close(prompt_bufnr)
-					vim.diagnostic.show()
+					local bufnr = vim.api.nvim_get_current_buf()
+					local ns = diagnostics.get_ltex_namespace(bufnr)
+					vim.diagnostic.show(ns, bufnr)
 
 					---@type integer
 					local win = vim.api.nvim_get_current_win()
@@ -262,7 +265,9 @@ function rule_ui:new_telescope_win(opts, use_diags)
 				n = { '<Esc>', 'q' },
 			}, function(prompt_bufnr)
 				telescope_actions.close(prompt_bufnr)
-				vim.diagnostic.show()
+				local bufnr = vim.api.nvim_get_current_buf()
+				local ns = diagnostics.get_ltex_namespace(bufnr)
+				vim.diagnostic.show(ns, bufnr)
 			end)
 			return true
 		end
