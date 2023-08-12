@@ -7,15 +7,15 @@ local rule_ui = require("ltex-utils.rule_ui")
 
 -- Writes current LTeX LSP server settings to file
 ---@return string|nil  # error message if writing to file fails
-local function on_exit()
+local function on_exit(bufmeta)
 	---@type integer
-	local bufnr = vim.api.nvim_get_current_buf()
+	local bufnr = bufmeta.buf
 
 	-- delete current buffer from windows list
 	builtin.wins[bufnr] = nil
 
 	---@type boolean, string|nil
-	local ok, err = pcall(ltex.write_ltex_to_file)
+	local ok, err = pcall(ltex.write_ltex_to_file, bufnr)
 
 	if not ok then
 		vim.notify("Error on exit: " .. vim.inspect(err), vim.log.levels.ERROR)
