@@ -5,6 +5,19 @@ local ltex_lsp = require("ltex-utils.ltex_lsp")
 local settings_io = require("ltex-utils.settings_io")
 local table_utils = require("ltex-utils.table_utils")
 
+local function ltex_filename(absolutePath)
+    -- Separate path and filename
+    local path, name_with_possible_ext = absolutePath:match("^(.-)([^/]+)$")
+
+    -- Split filename into name and its optional extension using your pattern
+    local name, ext = name_with_possible_ext:match("^([^%.]*)(%.?.*)$")
+
+    -- Construct the new filename
+    local newName = name .. ext:gsub("%.", "_") .. "_ltex.json"
+
+    return path .. newName
+end
+
 ---Generates a code action handler updating LSP server settings with 'cmd_cfg'
 ---and 'setting_cfg' fields.
 ---@param cmd_cfg string The key for the code action command
@@ -35,9 +48,11 @@ end
 ---current dictionaries and their languages, hidden false positives, and
 ---disabled rules. The settings are written to a JSON file, named
 ---'current_filename_ltex.json' located in its parent directory.
-function M.write_ltex_to_file()
+function M.write_ltex_to_file(bufnr)
+	---@type integer
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
 	---@type table|nil
-	local client = ltex_lsp.get_ltex()
+	local client = ltex_lsp.get_ltex(bufnr)
 	-- if no active ltex client abort
 	if not client then
 		vim.notify("No active ltex client found", vim.log.levels.ERROR)
@@ -80,9 +95,11 @@ function M.write_ltex_to_file()
 
 	if settings_to_save then
 		---@type string
-		local head = vim.fn.expand("%:p:h") .. "/" .. vim.fn.expand("%:t:r")
-											.. "_" .. vim.fn.expand("%:e")
-		settings_io.write(head .. "_ltex.json", vim.json.encode(settings_to_save))
+		local buf_filename = vim.api.nvim_buf_get_name(bufnr)
+		settings_io.write(
+			ltex_filename(buf_filename),
+			vim.json.encode(settings_to_save)
+		)
 	end
 end
 
@@ -94,19 +111,21 @@ end
 ---@return boolean # true if successful, false otherwise.
 ---@return string|nil # nil if successful, error message otherwise.
 function M.load_ltex_from_file()
+	local bufnr = vim.api.nvim_get_current_buf()
 	---@type table|nil
-	local client = ltex_lsp.get_ltex()
+	local client = ltex_lsp.get_ltex(bufnr)
 	-- if no active ltex client abort
 	if not client then
 		return false, "No active ltex client found"
 	end
 
 	---@type string
-	local head = vim.fn.expand("%:p:h") .. "/" .. vim.fn.expand("%:t:r")
-										.. "_" .. vim.fn.expand("%:e")
+	local settings_filename = vim.api.nvim_buf_get_name(bufnr)
 
 	---@type table<string, string[]>|nil, string|nil
-	local saved_settings, err = settings_io.read_settings(head .. "_ltex.json")
+	local saved_settings, err = settings_io.read_settings(
+		ltex_filename(settings_filename)
+	)
 	-- return error; we get here when opening a fresh tex-file
 	-- without an existing config.
 	if not saved_settings then
