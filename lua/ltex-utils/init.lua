@@ -63,6 +63,9 @@ local function autocmd_ltex()
 		pattern = "TelescopePreviewerLoaded",
 		callback = function(args)
 			---@type string
+			if args.data.bufname == nil then
+				return
+			end
 			local extension = args.data.bufname:match("%.(%w+)$")
 			if extension == "md" or extension == "tex" then
 				vim.wo.number = Config.rule_ui.previewer_line_number
