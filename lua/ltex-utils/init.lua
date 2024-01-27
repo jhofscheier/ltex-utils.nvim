@@ -139,6 +139,11 @@ function M.on_attach(bufnr)
 			return err
 		end
 	end
+
+	-- Set LTeX's global storage path
+	if not vim.env.LTEX_GLOBAL_STORAGE_PATH then
+		vim.env.LTEX_GLOBAL_STORAGE_PATH = vim.fn.stdpath('data') .. '/ltex/'
+	end
 end
 
 -- Sets up the module with user-defined options.
