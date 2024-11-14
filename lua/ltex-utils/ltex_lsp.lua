@@ -12,12 +12,14 @@ local M = {}
 ---Returns the first active LTeX LSP client attached to a buffer.
 ---NOTE: vim.lsp.buf_get_clients() is deprecated;
 ---use vim.lsp.get_active_clients instead.
+---NOTE: vim.lsp.get_active_clients is deprecated form nvim 0.12;
+---use vim.lsp.get_clients instead.
 ---@param bufnr integer|nil Buffer number; if not provided uses current buffer.
 ---@return table|nil # LTeX LSP client if found, otherwise nil.
 function M.get_ltex(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
-	for _, client in ipairs(vim.lsp.get_active_clients({ buffer = bufnr })) do
+	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
 		if client.name == 'ltex' then
 			return client
 		end
