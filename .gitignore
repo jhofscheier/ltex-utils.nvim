@@ -1,0 +1,4 @@
+lua/ltex-utils/backup
+.DS_Store
+test
+*.json
