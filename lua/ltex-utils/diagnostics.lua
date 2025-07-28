@@ -7,7 +7,7 @@ local M = {}
 function M.get_ltex_namespace(bufnr)
 	---@type integer
 	local id
-	for _, client in ipairs(vim.lsp.get_active_clients({ bufnr = bufnr })) do
+	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
 		if client.name == "ltex" then
 			id = client.id
 			break
