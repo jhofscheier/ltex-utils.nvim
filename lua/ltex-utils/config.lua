@@ -74,7 +74,10 @@ function M.setup(opts)
 					path = vim.fn.stdpath("config") .. "/spell/",
 					filename = function(lang)
 						return string.match(lang, "^(%a+)-") .. "." ..
-						vim.api.nvim_buf_get_option(0, "fileencoding") ..
+						vim.api.nvim_get_option_value(
+							"fileencoding",
+							{ buf = 0 }
+						) ..
 						".add"
 					end,
 				}

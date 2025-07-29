@@ -85,11 +85,8 @@ function M.on_publish_diags(accumulated_diagnostics, callback)
 		end
 
 		-- The original diagnostics handler
-		vim.lsp.with(
-			vim.lsp.diagnostic.on_publish_diagnostics, {
-				-- custom settings here
-			}
-		)(err, result, ctx)
+		-- use vim.diagnostic.config(({opts}, {namespace}) for custom settings
+		vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx)
 
 		-- Add new diagnostics to our table
 		table.insert(accumulated_diagnostics, result)
@@ -98,6 +95,7 @@ function M.on_publish_diags(accumulated_diagnostics, callback)
 		if diag_timer then
 			diag_timer:stop()
 			diag_timer:close()
+			diag_timer = nil
 		end
 
 		-- Start a new timer

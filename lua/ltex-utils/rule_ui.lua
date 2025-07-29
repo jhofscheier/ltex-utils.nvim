@@ -112,9 +112,9 @@ local function new_modify_rule_win(self, prompt_bufnr, use_diags)
 	---@type integer
 	local bufnr = vim.api.nvim_win_get_buf(win_id)
 
-	vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'wipe')
+	vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = bufnr })
 	-- Enable line wrapping
-	vim.api.nvim_win_set_option(win_id, 'wrap', true)
+	vim.api.nvim_set_option_value("wrap", true, { win = win_id })
 
 	---@type string, string
 	local lang, rule = self.cache.selection_to_lang_rule(selection)
