@@ -32,23 +32,7 @@ end
 ---Toggles the LTeX diagnostics hints on/off
 ---@param bufnr integer|nil
 function M.toggle_diags(bufnr)
-	bufnr = bufnr or vim.api.nvim_get_current_buf()
-
-	---@type integer|nil
-	local ns = M.get_ltex_namespace(bufnr)
-	if not ns then
-		vim.notify("Error in toggle_diags: no namespace for LTeX LSP server")
-		return
-	end
-
-	---@type boolean
-	local is_disabled = vim.diagnostic.is_disabled(bufnr, ns)
-
-	if is_disabled then
-		vim.diagnostic.enable(bufnr, ns)
-	else
-		vim.diagnostic.disable(bufnr, ns)
-	end
+	vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end
 
 return M
