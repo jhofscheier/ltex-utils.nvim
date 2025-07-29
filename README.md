@@ -1,9 +1,11 @@
 # LTeX-Utils.nvim: LTeX Utility functions
 
-Neovim plugin implementing functionality for LSP code actions for [`ltex-ls`](https://github.com/valentjn/ltex-ls), namely
-* [`addToDictionary`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexaddtodictionary-client),
-* [`disableRule`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexdisablerules-client), and
-* [`hideFalsePositive`](https://valentjn.github.io/ltex/ltex-ls/server-usage.html#_ltexhidefalsepositives-client).
+**Note**. The original version of this plugin supported [`ltex-ls`](https://github.com/valentjn/ltex-ls), however this repository has not been maintained for 2 years by the time of writing this README. Therefore, I have updated the plugin and documentation to use the community fork ['ltex-ls-plus'](https://github.com/ltex-plus/ltex-ls-plus) instead.
+
+Neovim plugin implementing functionality for LSP code actions for [`ltex-ls-plus`](https://github.com/ltex-plus/ltex-ls-plus), namely
+* [`addToDictionary`](https://ltex-plus.github.io/ltex-plus/ltex-ls-plus/server-usage.html#_ltexaddtodictionary-client),
+* [`disableRule`](https://ltex-plus.github.io/ltex-plus/ltex-ls-plus/server-usage.html#_ltexdisablerules-client), and
+* [`hideFalsePositive`](https://ltex-plus.github.io/ltex-plus/ltex-ls-plus/server-usage.html#_ltexhidefalsepositives-client).
 
 In addition, the plugin provides functions for loading, saving, and modifying LSP server settings and custom dictionaries.
 For a detailed overview, please refer to the [tutorial](TUTORIAL.md).
@@ -20,7 +22,7 @@ There are already several excellent Neovim plugins that provide similar function
 
 ## Requirements
 
-- [ltex-ls](https://github.com/valentjn/ltex-ls)
+- [ltex-ls-plus](https://github.com/ltex-plus/ltex-ls-plus)
 - [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
 - [Telescope](https://github.com/nvim-telescope/telescope.nvim)
 - optional:
@@ -119,6 +121,8 @@ For example, for `lazy.nvim` this could be done as follows.
             -- use diagnostics data for modifying disabledRules rules
             diags_disable_rules = true,
         },
+        -- set the ltex-ls ("ltex") or ltex-ls-plus backend ("ltex_plus")
+        backend = "ltex_plus",
     },
 },
 ```
@@ -142,7 +146,7 @@ For example:
 * The 'Add word to dictionary' code actions uses vim's `spellgood` command to add new words into the internal dictionary.
 * `LTeXUtils modify_dict` runs `mkspell` upon exit.
 
-This configuration can be advantageous if you prefer to use a single dictionary for both `ltex-ls` and vim's built-in spell checker.
+This configuration can be advantageous if you prefer to use a single dictionary for both `ltex-ls-plus` and vim's built-in spell checker.
 
 Alternatively, if you want more control over the dictionary, you may set `use_vim_dict` to `false` while configuring `path` and `filename` to update vim's internal dictionary for additional words accordingly.
 Please note that in this case, you will be required to manually execute the `mkspell` command.
