@@ -14,7 +14,10 @@ vim.api.nvim_create_user_command("LTeXUtils", function(opts)
 end, {
 	nargs = "*",
 	complete = function(_, line)
-		local builtin_list = vim.tbl_keys(require("ltex-utils.builtin"))
+		local excluded = { "wins" }
+		local builtin_list = vim.tbl_filter(function(key)
+			return not vim.tbl_contains(excluded, key)
+		end, vim.tbl_keys(require("ltex-utils.builtin")))
 		local l = vim.split(line, "%s+")
 		local n = #l - 2
 
