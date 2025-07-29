@@ -1,9 +1,10 @@
 local M = {}
 
 ---@class LTeXUtils.Config
----@field dictionary? table
+---@field dictionary? Dictionary.Config
 ---@field rule_ui? RuleUi.Config
 ---@field diagnostics? Diagnostics.Config
+---@field backend? string
 local defaults = {
 	---@class Dictionary.Config
 	---@field path string
@@ -60,6 +61,8 @@ local defaults = {
 		-- use diagnostics data for modifying disabledRules rules
 		diags_disable_rules = true,
 	},
+	-- set the ltex-ls ("ltex") or ltex-ls-plus backend ("ltex_plus")
+	backend = "ltex_plus",
 }
 
 ---@type LTeXUtils.Config

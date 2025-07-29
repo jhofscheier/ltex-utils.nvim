@@ -1,4 +1,5 @@
 local M = {}
+local Config = require("ltex-utils.config")
 
 ---Returns the namespace of LTeX LSP server for buffer `bufnr`; nil if not
 ---successful.
@@ -8,7 +9,7 @@ function M.get_ltex_namespace(bufnr)
 	---@type integer
 	local id
 	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
-		if client.name == "ltex" then
+		if client.name == Config.backend then
 			id = client.id
 			break
 		end
@@ -19,7 +20,7 @@ function M.get_ltex_namespace(bufnr)
 	end
 
 	---@type string
-	local lsp_server_name = "vim.lsp.ltex." .. tostring(id)
+	local lsp_server_name = "vim.lsp." .. Config.backend .. "." .. tostring(id)
 	for ns, ns_metadata in pairs(vim.diagnostic.get_namespaces()) do
 		if vim.startswith(ns_metadata.name, lsp_server_name) then
 			return ns

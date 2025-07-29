@@ -20,7 +20,7 @@ function M.get_ltex(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
 	for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
-		if client.name == 'ltex' then
+		if client.name == Config.backend then
 			return client
 		end
 	end
