@@ -24,7 +24,7 @@ function M.selection_to_lang_rule(selection)
 	-- HACK: The code vim.fn.json_encode({ rule = rule, sentence = sentence })
 	-- works too but has the caveat that it swaps rule and sentence leading to
 	-- rules of the form '{"sentence":"...","rule":"..."}' but we want to keep
-	-- the order as ltex-ls uses
+	-- the order that ltex-ls uses
 	return lang, string.format(
 		'{"rule":%s,"sentence":%s}',
 		json_encode(rule),
