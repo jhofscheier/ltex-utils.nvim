@@ -11,8 +11,8 @@ local defaults = {
 	---@field filename function(string): string
 	dictionary = {
 		-- Path to the directory where dictionaries are stored.
-		-- Defaults to the Neovim cache directory.
-		path = vim.api.nvim_call_function("stdpath", {"cache"}) .. "/ltex/",
+		-- Defaults to the Neovim state directory.
+		path = vim.api.nvim_call_function("stdpath", {"state"}) .. "/ltex/",
 		---Returns the dictionary file name for given language `lang`
 		---@param lang string
 		---@return string
