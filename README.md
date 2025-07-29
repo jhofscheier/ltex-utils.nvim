@@ -1,6 +1,7 @@
 # LTeX-Utils.nvim: LTeX Utility functions
 
-| **Note**. The original version of this plugin supported [`ltex-ls`](https://github.com/valentjn/ltex-ls), however this repository has not been maintained for 2 years by the time of writing this README. Therefore, I have updated the plugin and documentation to use the community fork ['ltex-ls-plus'](https://github.com/ltex-plus/ltex-ls-plus) instead.
+> **Note**. The original version of this plugin supported [`ltex-ls`](https://github.com/valentjn/ltex-ls), however this repository has not been maintained for 2 years by the time of writing this README.
+>Therefore, I have updated the plugin and documentation to use the community fork ['ltex-ls-plus'](https://github.com/ltex-plus/ltex-ls-plus) instead.
 
 Neovim plugin implementing functionality for LSP code actions for [`ltex-ls-plus`](https://github.com/ltex-plus/ltex-ls-plus), namely
 * [`addToDictionary`](https://ltex-plus.github.io/ltex-plus/ltex-ls-plus/server-usage.html#_ltexaddtodictionary-client),
