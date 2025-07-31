@@ -22,24 +22,31 @@ function M.merge_lists_unique(list1, list2, changes)
 	---@type table<string, boolean>
 	local unique_elements = {}
 
-	if not changes then
-		-- Add unique elements from list1 and list2 to unique_elements
-		for _, list in ipairs({list1, list2}) do
-			for _, element in ipairs(list) do
-				unique_elements[element] = true
-			end
-		end
+    if not changes then
+        if list1 then
+            for _, element in ipairs(list1) do
+                unique_elements[element] = true
+            end
+        end
+        
+        if list2 then
+            for _, element in ipairs(list2) do
+                unique_elements[element] = true
+            end
+        end
 	else
 		-- Add unique elements from list1 and list2 to unique_elements
 		-- and apply changes when iterating through lists
 		for _, list in ipairs({list1, list2}) do
-			for _, element in ipairs(list) do
-				---@type string
-				local curr_change = changes[element]
-				if not curr_change then
-					unique_elements[element] = true
-				elseif curr_change ~= "" then
-					unique_elements[curr_change] = true
+			if list then
+				for _, element in ipairs(list) do
+					---@type string
+					local curr_change = changes[element]
+					if not curr_change then
+						unique_elements[element] = true
+					elseif curr_change ~= "" then
+						unique_elements[curr_change] = true
+					end
 				end
 			end
 		end
