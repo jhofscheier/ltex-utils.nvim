@@ -56,6 +56,8 @@ function M.merge_lists_unique(list1, list2, changes)
 	---@type string[]
 	local merged_list = vim.tbl_keys(unique_elements)
 
+	table.sort(merged_list)
+
 	return merged_list
 end
 

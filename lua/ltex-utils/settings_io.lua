@@ -169,17 +169,21 @@ end
 function M.update_dictionary_files(dictionaries)
 	---@type string[]
 	local used_langs = {}
+	local used_filenames = {}
 	for lang, dict in pairs(dictionaries) do
 		---@type string
 		local filename = Config.dictionary.path ..
 											Config.dictionary.filename(lang)
-		---@type string[]|nil
-		local saved_dict = M.read_dictionary(filename)
-		-- if there is already a saved dictionary merge it with current one
-		if saved_dict then
-			dict = table_utils.merge_lists_unique(dict, saved_dict)
+		if not vim.tbl_contains(used_filenames, filename) then
+			---@type string[]|nil
+			local saved_dict = M.read_dictionary(filename)
+			-- if there is already a saved dictionary merge it with current one
+			if saved_dict then
+				dict = table_utils.merge_lists_unique(dict, saved_dict)
+			end
+			M.write(filename, table.concat(dict, "\n") .. "\n")
 		end
-		M.write(filename, table.concat(dict, "\n") .. "\n")
+		table.insert(used_filenames, filename)
 		table.insert(used_langs, lang)
 	end
 
