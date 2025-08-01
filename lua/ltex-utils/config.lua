@@ -76,12 +76,13 @@ function M.setup(opts)
 				dictionary = {
 					path = vim.fn.stdpath("config") .. "/spell/",
 					filename = function(lang)
-						return string.match(lang, "^(%a+)-") .. "." ..
-						vim.api.nvim_get_option_value(
+						local fileencoding = vim.api.nvim_get_option_value(
 							"fileencoding",
 							{ buf = 0 }
-						) ..
-						".add"
+						) or "utf-8"
+
+						return string.match(lang, "^(%a+)-") .. "." ..
+														fileencoding .. ".add"
 					end,
 				}
 			} or {}
