@@ -157,7 +157,7 @@ Using the mentioned configuration above, activate code actions by pressing `<lea
 Navigate to an LTeX issue within your text (LaTeX, Markdown, etc.), then press `<leader>-ca` and choose a suitable option from the menu to fix the problem.
 
 Upon closing the buffer, LSP server settings (including hidden false positives, disabled rules, used languages, and added dictionary words) are saved to disk.
-Settings are saved in the same folder as your LaTeX/Markdown file under `your_file_ltex.json`.
+Settings are saved in `$XDG_STATE_HOME/nvim/ltex-utils/file_settings/<slugified_filename>` in JSON format.
 Dictionaries are merged with existing (stored) ones and then saved to preserve all words.
 By default, dictionaries are saved in Neovim's cache directory, although this can be customised (see [Installation](#installation)).
 
@@ -179,7 +179,7 @@ Accumulating outdated rules can clutter the `hiddenFalsePositives` list, as LTeX
 
 
 To avoid this, use 'Hide False Positive' sparingly or manually remove obsolete rules through `:LTeXUtils modify_hiddenFalsePositives`.
-Direct modification of `the your_file_ltex.json` settings file is not advised.
+Direct modification of the JSON settings file is not advised.
 Using regular expressions for `hiddenFalsePositives` could help prevent clutter in your hidden false positives list.
 However, bear in mind that hidden false positive rules hide the entire sentence and might not yield the expected behaviour.
 An in-depth explanation is available in the [tutorial](TUTORIAL.md).

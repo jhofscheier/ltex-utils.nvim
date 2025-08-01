@@ -6,16 +6,11 @@ local settings_io = require("ltex-utils.settings_io")
 local table_utils = require("ltex-utils.table_utils")
 
 local function ltex_filename(absolutePath)
-    -- Separate path and filename
-    local path, name_with_possible_ext = absolutePath:match("^(.-)([^/]+)$")
+	local rootDir = vim.fn.stdpath("state") .. "/ltex-utils/file_settings/"
+	vim.fn.mkdir(rootDir, "p")
 
-    -- Split filename into name and its optional extension using your pattern
-    local name, ext = name_with_possible_ext:match("^([^%.]*)(%.?.*)$")
-
-    -- Construct the new filename
-    local newName = name .. ext:gsub("%.", "_") .. "_ltex.json"
-
-    return path .. newName
+	local slugPath = absolutePath:gsub("/", "%%"):gsub("\\", "%%"):gsub(":", "%%")
+	return rootDir .. slugPath
 end
 
 ---Generates a code action handler updating LSP server settings with 'cmd_cfg'
@@ -46,8 +41,7 @@ end
 
 ---Writes the current LTeX LSP server settings to a JSON file. It saves the
 ---current dictionaries and their languages, hidden false positives, and
----disabled rules. The settings are written to a JSON file, named
----'current_filename_ltex.json' located in its parent directory.
+---disabled rules.
 function M.write_ltex_to_file(bufnr)
 	---@type integer
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
@@ -111,9 +105,8 @@ end
 
 ---Loads LTeX  LSP settings from JSON file. Updates the active LTeX LSP
 ---server with read settings (hidden false positives, disabled rules, and
----specific language dictionaries). Settings file given by
----'buffer_filename_ltex.json'.  If settings file doesn't exist, an
----notification is printed.
+---specific language dictionaries).
+---If settings file doesn't exist, a notification is printed.
 ---@return boolean # true if successful, false otherwise.
 ---@return string|nil # nil if successful, error message otherwise.
 function M.load_ltex_from_file()
