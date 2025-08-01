@@ -69,7 +69,9 @@ function M.write_ltex_to_file(bufnr)
 	if Config.dictionary.use_vim_dict then
 		-- Neovim takes care of saving dictionaries
 		-- only remember used languages
-		langs = vim.tbl_keys(settings.dictionary)
+		if settings.dictionary then
+			langs = vim.tbl_keys(settings.dictionary)
+		end
 	else
 		-- save dictionaries; update them if necessary
 		if settings.dictionary then
@@ -89,6 +91,10 @@ function M.write_ltex_to_file(bufnr)
 				vim.tbl_keys(settings[settings_cfg])
 			)
 		end
+	end
+
+	if settings.language then
+		langs = table_utils.merge_lists_unique(langs, { settings.language })
 	end
 
 	settings_to_save.langs = langs or nil
