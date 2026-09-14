@@ -37,7 +37,7 @@ function M.new_handler(cmd_cfg, setting_cfg)
 			table_utils.extend_or_init(settings[setting_cfg], lang, rules)
 		end
 
-		client.notify(
+		client:notify(
 			"workspace/didChangeConfiguration",
 			client.config.settings
 		)
@@ -153,7 +153,7 @@ function M.load_ltex_from_file()
 		)
 	end
 
-	client.notify(
+	client:notify(
 		"workspace/didChangeConfiguration",
 		client.config.settings
 	)
